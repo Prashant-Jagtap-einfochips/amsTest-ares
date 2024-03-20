@@ -30,6 +30,12 @@ git clone https://github.com/Prashant-Jagtap-einfochips/amsTest-ares.git
 	
 7. Inside Build->aarch64le-debug directory "amsTest-ares" app executable is generated.
 
+Signing Steps for share library:
+1. Open Hexagon SDK 5.4.0.3
+2. Go to <Hexagon SDK 5.4.0.3>/utils/scripts
+3. Enter following command for signing:
+	- signer.py sign -t <Device serialno> -d 4 -i <shared libray name> -o <output Directory name>
+ 	- signed library is generated in output directory. (Push this signed library to device at: /mnt/etc/images/dsp)
 
 Verification of amsTest-ares Application:
 1. Connect to COM port
