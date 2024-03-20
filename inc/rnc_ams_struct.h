@@ -107,7 +107,7 @@ graph_config_t *get_graph_config(int use_case);
 #define DYNAMIC_GAIN_MODULE                                 \
     .module[0].id = MODULE_1,                               \
     .module[0].flags = AMS_INLINE_PROCESSING_MODE,          \
-    .module[0].capiv2_info.id = DYNAMIC_PASSTHRU_MODULE_ID, \
+    .module[0].capiv2_info.id = DYNAMIC_GAIN_MODULE_ID, \
     .module[0].capiv2_info.tag = "capi_gain",               \
     .module[0].capiv2_info.shared_obj_filename = "capi_gain.so",
 
