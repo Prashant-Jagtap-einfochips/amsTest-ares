@@ -31,20 +31,19 @@
 #include <stdint.h>
 #include "ams.h"
 //#include "ams_util.h"
+#include "dsp_audio_micro_service.h"
 
 #define STATIC_RNC_MODULE_ID 0x170010A6
 #define DYNAMIC_RNC_MODULE_ID 0x1000B600
 #define STATIC_PASSTHRU_MODULE_ID 0x00013378
 #define DYNAMIC_PASSTHRU_MODULE_ID 0x070010A7
+#define DYNAMIC_GAIN_MODULE_ID 0x10015656
 
 #define MAX_ENDPOINT_NUM 5
 #define MAX_MODULE_NUM 5
 #define MAX_CONNECTION_NUM 20
 #define MAX_PROP_NUM 5
 #define MAX_MSG_LINK_NUM 2
-
-#define DSP_AMS_ENDPOINT_TYPE_SOURCE 0
-#define DSP_AMS_ENDPOINT_TYPE_SINK 1
 
 typedef enum
 {
@@ -104,6 +103,13 @@ graph_config_t *get_graph_config(int use_case);
     .module[0].capiv2_info.id = DYNAMIC_RNC_MODULE_ID, \
     .module[0].capiv2_info.tag = "capi_rnc",           \
     .module[0].capiv2_info.shared_obj_filename = "capi_rnc.so",
+
+#define DYNAMIC_GAIN_MODULE                                 \
+    .module[0].id = MODULE_1,                               \
+    .module[0].flags = AMS_INLINE_PROCESSING_MODE,          \
+    .module[0].capiv2_info.id = DYNAMIC_PASSTHRU_MODULE_ID, \
+    .module[0].capiv2_info.tag = "capi_gain",               \
+    .module[0].capiv2_info.shared_obj_filename = "capi_gain.so",
 
 #define A2B_PROP_CONFIG                                                             \
     .endpoint_nums = 2,                                                             \
@@ -232,6 +238,45 @@ graph_config_t *get_graph_config(int use_case);
     .connection[1].source.module.port_index = 0,                                    \
     .connection[1].destination.type = AMS_CONNECTION_ELEMENT_TYPE_ENDPOINT,         \
     .connection[1].destination.endpoint.id = ENDPOINT_1,                            \
+                                                                                    \
+    .graph_prop[0].prop_id = AMS_GRAPH_PROPERTY_ID_EXCLV_EP_CLK_ATTR,               \
+    .graph_prop[0].u.exclv_ep_clk_attr.exclv_ep_id = AMS_HW_INTERFACE_TDM1,         \
+    .graph_prop[0].u.exclv_ep_clk_attr.clk_invert = 4,                              \
+    .graph_prop[0].appy_after_start = 0,
+
+#define ADSP_PROP_CONFIG                                                            \
+    .endpoint_nums = 2,                                                             \
+    .module_nums = 1,                                                               \
+    .connection_nums = 2,                                                           \
+    .prop_nums = 2,                                                                 \
+                                                                                    \
+    .endpoint[0].id = ENDPOINT_1,                                                   \
+    .endpoint[0].type = AMS_ENDPOINT_TYPE_SOURCE,                                   \
+    .endpoint[0].channel_mask = 0xFF,                                               \
+    .endpoint[0].q_factor = 31,                                                     \
+    .endpoint[0].flags = AMS_ENDPOINT_SHARED_WITH_ADSP_OUTPUT,                      \
+                                                                                    \
+    .endpoint[1].id = ENDPOINT_2,                                                   \
+    .endpoint[1].type = AMS_ENDPOINT_TYPE_SINK,                                     \
+    .endpoint[1].channel_mask = 0xFF,                                               \
+    .endpoint[1].q_factor = 31,                                                     \
+    .endpoint[1].flags = AMS_ENDPOINT_EXCLUSIVE,                                    \
+                                                                                    \
+    .connection[0].num_channels = 8,                                                \
+    .connection[0].bit_width = 16,                                                  \
+    .connection[0].source.type = AMS_CONNECTION_ELEMENT_TYPE_ENDPOINT,              \
+    .connection[0].source.endpoint.id = ENDPOINT_1,                                 \
+    .connection[0].destination.type = AMS_CONNECTION_ELEMENT_TYPE_MODULE,           \
+    .connection[0].destination.module.id = MODULE_1,                                \
+    .connection[0].destination.module.port_index = 0,                               \
+                                                                                    \
+    .connection[1].num_channels = 8,                                                \
+    .connection[1].bit_width = 16,                                                  \
+    .connection[1].source.type = AMS_CONNECTION_ELEMENT_TYPE_MODULE,                \
+    .connection[1].source.module.id = MODULE_1,                                     \
+    .connection[1].source.module.port_index = 0,                                    \
+    .connection[1].destination.type = AMS_CONNECTION_ELEMENT_TYPE_ENDPOINT,         \
+    .connection[1].destination.endpoint.id = ENDPOINT_2,                            \
                                                                                     \
     .graph_prop[0].prop_id = AMS_GRAPH_PROPERTY_ID_EXCLV_EP_CLK_ATTR,               \
     .graph_prop[0].u.exclv_ep_clk_attr.exclv_ep_id = AMS_HW_INTERFACE_TDM1,         \

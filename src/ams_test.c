@@ -81,6 +81,8 @@ static int show_graph(void)
     printf("6: A2B     -->  PASSTHRU(Dynamic)  --> A2B\n");
     printf("7: A2B     -->  SAMPLE(Static)     --> A2B\n");
     printf("8: A2B     -->  RNC(Dynamic)       --> A2B\n");
+    printf("**********   ADSP->TDM1 / Mercury   **********\n");
+    printf("9: ADSP    -->  GAIN(Dynamic)      --> ANALOG\n");
     return 0;
 }
 
