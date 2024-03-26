@@ -46,7 +46,7 @@
 #define AMS_SAMPLE_RATE 48000
 
 #define AMS_RNC_UC_MIN 1
-#define AMS_RNC_UC_MAX 8
+#define AMS_RNC_UC_MAX 10
 #define AMS_OPERATE_DEV_NUM_MAX 5
 
 #define DSP_AMS_TS_PAIR 10
@@ -89,6 +89,7 @@ typedef struct ams_rnc_interface
     int (*set_param)(uint8_t type, set_tuningtool_param_t param_value);
     int (*get_param)(uint8_t type, get_tuningtool_param_t param_value);
     int (*get_current_timestamp)(void);
+    int (*graph_query_info)(void);
 } ams_rnc_interface_t;
 
 typedef struct ams_rnc_timestamp

@@ -81,6 +81,9 @@ static int show_graph(void)
     printf("6: A2B     -->  PASSTHRU(Dynamic)  --> A2B\n");
     printf("7: A2B     -->  SAMPLE(Static)     --> A2B\n");
     printf("8: A2B     -->  RNC(Dynamic)       --> A2B\n");
+    printf("**********   ADSP->TDM1 / Mercury   **********\n");
+    printf("9: ADSP    -->  GAIN(Dynamic)      --> ANALOG\n");
+    printf("10: ADSP   -->  CTRL_GAIN(Dynamic) --> ANALOG\n");
     return 0;
 }
 
@@ -96,7 +99,7 @@ int main(int argc, char **argv)
     int cnt = 0;
     char buffer[BUFFERSIZE];
     char char_buf[BUFFERSIZE];
-    int select = 0;
+    int select = 0, choice = 0;
     int opt;
     int option_index = 0;
     ams_status_t rc = 0;
@@ -137,6 +140,7 @@ int main(int argc, char **argv)
     show_options();
     while (1)
     {
+#if 0
         while (fgets(buffer, BUFFERSIZE, stdin))
         {
             cnt++;
@@ -192,35 +196,146 @@ int main(int argc, char **argv)
                 rc = ams_rnc_interface.graph_destroy();
                 printf("RNC destroy graph %s\n", rc == 0 ? "OK" : "NOK");
                 break;
+            case '9':
+            	rc = ams_rnc_interface.graph_query_info();
+            	printf("RNC graph query info %s\n", rc == 0 ? "OK" : "NOK");
+            	fflush(stdin);
+            	break;
             case 'a':
-                if (select == 1 || select == 2 || select == 5 || select == 6)
+            	//printf("Select = %d\n", select);
+                /*if (select == 1 || select == 2 || select == 5 || select == 6)
                 {
                     printf("Passthru module's set/get functions no longer supported .\n");
                     break;
-                }
-                printf("Enter data value: ");
+                }*/
+                //printf("Enter data value: ");
                 fgets(char_buf, BUFFERSIZE, stdin);
                 int num = char_buf[0] - '0';
+                //unsigned int num;
+                //scanf(&num, "%d");
                 set_param_value.data = num;
                 rc = ams_rnc_interface.set_param(1, set_param_value);
                 printf("RNC set module value %s\n", rc == 0 ? "OK" : "NOK");
+                fflush(stdin);
                 break;
             case 'b':
-                if (select == 1 || select == 2 || select == 5 || select == 6)
+                /*if (select == 1 || select == 2 || select == 5 || select == 6)
                 {
                     printf("Passthru module's set/get functions no longer supported .\n");
                     break;
-                }
+                }*/
                 rc = ams_rnc_interface.get_param(1, get_param_value);
+                printf("Get value from Gain Module: %d", get_param_value.data);
                 printf("RNC get module value %s\n", rc == 0 ? "OK" : "NOK");
+                fflush(stdin);
                 break;
             case 'c':
                 rc = ams_rnc_interface.get_current_timestamp();
                 printf("RNC current module timestamp %s\n", rc == 0 ? "OK" : "NOK");
+                fflush(stdin);
                 break;
             default:
                 break;
             }
         }
+#endif
+        while (0 < scanf("%d",&choice))
+		{
+			cnt++;
+			switch (choice)
+			{
+			case 0:
+				rc = show_options();
+				printf("%s\n", (rc == 0 ? "OK" : "NOK"));
+				break;
+			case 1:
+				rc = show_graph();
+				//fgets(char_buf, BUFFERSIZE, stdin);
+				//select = char_buf[0] - '0';
+				scanf("%d", &select);
+				if (select > AMS_RNC_UC_MAX || select < AMS_RNC_UC_MIN)
+				{
+					printf("Invalid Usecase :%d\n", select);
+					break;
+				}
+				if ((opt_args.block_size == 12) && (select == 3 || select == 7))
+				{
+					printf("The current module does not support 12 frame size.\n");
+					printf("Please reselect options.\n");
+					show_options();
+					break;
+				}
+				rc = ams_rnc_interface.set_usecase(select);
+				printf("RNC Set usecase %d %s\n", select, (rc == 0 ? "OK" : "NOK"));
+				break;
+			case 2:
+				rc = ams_rnc_interface.graph_init();
+				printf("RNC create graph %s\n", rc == 0 ? "OK" : "NOK");
+				break;
+			case 3:
+				rc = ams_rnc_interface.graph_open();
+				printf("RNC open graph %s\n", rc == 0 ? "OK" : "NOK");
+				break;
+			case 4:
+				rc = ams_rnc_interface.graph_start();
+				printf("RNC start graph %s\n", rc == 0 ? "OK" : "NOK");
+				break;
+			case 5:
+				rc = system("a2b-app -p /data/adi_a2b_busconfig.dat &");
+				break;
+			case 6:
+				rc = ams_rnc_interface.graph_stop();
+				printf("RNC stop graph %s\n", rc == 0 ? "OK" : "NOK");
+				break;
+			case 7:
+				rc = ams_rnc_interface.graph_close();
+				printf("RNC close graph %s\n", rc == 0 ? "OK" : "NOK");
+				break;
+			case 8:
+				rc = ams_rnc_interface.graph_destroy();
+				printf("RNC destroy graph %s\n", rc == 0 ? "OK" : "NOK");
+				break;
+			case 9:
+				rc = ams_rnc_interface.graph_query_info();
+				printf("RNC graph query info %s\n", rc == 0 ? "OK" : "NOK");
+				fflush(stdin);
+				break;
+			case 10:
+				//printf("Select = %d\n", select);
+				/*if (select == 1 || select == 2 || select == 5 || select == 6)
+				{
+					printf("Passthru module's set/get functions no longer supported .\n");
+					break;
+				}*/
+				printf("Enter data value: ");
+				//fgets(char_buf, BUFFERSIZE, stdin);
+				//int num = char_buf[0] - '0';
+				unsigned int num;
+				scanf("%d", &num);
+				set_param_value.data = num;
+				rc = ams_rnc_interface.set_param(1, set_param_value);
+				printf("RNC set module value %s\n", rc == 0 ? "OK" : "NOK");
+				fflush(stdin);
+				break;
+			case 11:
+				/*if (select == 1 || select == 2 || select == 5 || select == 6)
+				{
+					printf("Passthru module's set/get functions no longer supported .\n");
+					break;
+				}*/
+				rc = ams_rnc_interface.get_param(1, get_param_value);
+				printf("Get value from Gain Module: 0x%x", get_param_value.data);
+				printf("RNC get module value %s\n", rc == 0 ? "OK" : "NOK");
+				fflush(stdin);
+				break;
+			case 12:
+				rc = ams_rnc_interface.get_current_timestamp();
+				printf("RNC current module timestamp %s\n", rc == 0 ? "OK" : "NOK");
+				fflush(stdin);
+				break;
+			default:
+				break;
+			}
+		}
     }
 }

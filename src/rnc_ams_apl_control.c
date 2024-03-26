@@ -68,6 +68,7 @@ static int ams_destroy_graph_func();
 static int ams_set_param_func(uint8_t type, set_tuningtool_param_t param_value);
 static int ams_get_param_func(uint8_t type, get_tuningtool_param_t param_value);
 static int ams_get_port_timestamp(void);
+static int ams_query_graph_info_func(void);
 
 ams_rnc_interface_t ams_rnc_interface = {
     //.select_output = ams_set_expander,
@@ -81,6 +82,7 @@ ams_rnc_interface_t ams_rnc_interface = {
     .set_param = ams_set_param_func,
     .get_param = ams_get_param_func,
     .get_current_timestamp = ams_get_port_timestamp,
+	.graph_query_info = ams_query_graph_info_func,
 };
 
 void ams_ssr_user_cb_func(ams_event_id_t e, void *data)
@@ -363,9 +365,12 @@ static int ams_set_param_func(uint8_t type, set_tuningtool_param_t param_value)
     switch (type)
     {
     case 1:
-        rc = ams_set_param(ams_session, *pgh, graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1, sizeof(param_value), &param_value);
-        printf("module id: %d, module param id: 0x%x \n", graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1);
-        RNC_WRAPPER_LIB_LOGD("ams_rnc : set param returned value 0x%x\n", rc);
+        //rc = ams_set_param(ams_session, *pgh, graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1, sizeof(param_value), &param_value);
+        rc = ams_set_param(ams_session, *pgh, MODULE_1, 0x10001175, sizeof(param_value), &param_value.data);
+
+        //printf("module id: %d, module param id: 0x%x \n", graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1);
+        //RNC_WRAPPER_LIB_LOGD("ams_rnc : set param returned value 0x%x\n", rc);
+        printf("ams_rnc : set param returned value 0x%x\n", rc);
         break;
     default:
         RNC_WRAPPER_LIB_LOGD("ams_rnc : set param type failed\n");
@@ -388,15 +393,43 @@ static int ams_get_param_func(uint8_t type, get_tuningtool_param_t param_value)
     {
     case 1:
         param_size = sizeof(param_value);
-        rc = ams_get_param(ams_session, *pgh, graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1, &param_size, &param_value);
-        printf("module id: %d, module param id: 0x%x, module param value: %d \n", graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1, param_value.data);
-        RNC_WRAPPER_LIB_LOGD("ams_rnc : get param returned value 0x%x\n", rc);
+        //rc = ams_get_param(ams_session, *pgh, graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1, &param_size, &param_value);
+        rc = ams_get_param(ams_session, *pgh, MODULE_1, 0x10001175, &param_size, &param_value);
+        //printf("module id: %d, module param id: 0x%x, module param value: %d \n", graph_config->module[0].id, graph_config->module[0].capiv2_info.id + 1, param_value.data);
+        //RNC_WRAPPER_LIB_LOGD("ams_rnc : get param returned value 0x%x\n", rc);
+        printf("ams_rnc : get param returned value 0x%x\n", rc);
+        printf("ams_rnc : get param value 0x%x\n", param_value.data);
         break;
     default:
         RNC_WRAPPER_LIB_LOGD("ams_rnc : get param type failed\n");
         break;
     }
     return rc;
+}
+
+static int ams_query_graph_info_func(void)
+{
+	ams_status_t rc = 0;
+	ams_graph_handle_t *pgh;
+	graph_config_t *graph_config;
+	ams_graph_info_t graph_info;
+	uint32_t idx = 0;
+
+	graph_config = get_graph_config(ams_usecase);
+	pgh = ams_get_graph_handle_func(ams_usecase);
+
+	rc = ams_query_graph_info(ams_session, *pgh, &graph_info);
+	printf("ams_rnc : ams_querry_graph_info returned value 0x%x\n", rc);
+
+	printf("graph_info.modules_num = %d\n", graph_info.modules_num);
+	printf("graph_info.ep_num = %d\n", graph_info.ep_num);
+	for (idx = 0; idx < graph_info.modules_num; idx++) {
+	    printf("graph_info.modules_ids[%d] = %d\n", idx, graph_info.modules_ids[idx]);
+	}
+	for (idx = 0; idx < graph_info.ep_num; idx++) {
+		printf("graph_info.ep_ids[%d] = %d\n", idx, graph_info.ep_ids[idx]);
+	}
+	return rc;
 }
 
 static int ams_destroy_graph_func(void)

@@ -75,6 +75,17 @@ static graph_config_t graph_8 = {
     DYNAMIC_SAMPLE_MODULE
 };
 
+// ADSP -> GAIN(Dynamic) -> TDM1
+static graph_config_t graph_9 = {
+    ANALOG_PROP_CONFIG_2
+	DYNAMIC_GAIN_MODULE
+};
+
+static graph_config_t graph_10 = {
+    ANALOG_PROP_CONFIG_3
+	DYNAMIC_CTRL_MODULE
+};
+
 int set_msg_link_connections(graph_config_t *gh_cfg)
 {
 
@@ -132,6 +143,12 @@ graph_config_t *get_graph_config(int use_case)
     case 8:
         ret_graph = &graph_8;
         break;
+    case 9:
+		ret_graph = &graph_9;
+		break;
+    case 10:
+		ret_graph = &graph_10;
+		break;
     default:
         break;
     }
